@@ -1,6 +1,7 @@
 import collections as COL
 
 import pyArango.connection as CON
+import click
 
 class Populater(object):
   """docstring for Populater"""
@@ -27,7 +28,6 @@ class Populater(object):
     except :
       print("Database already exists")
     
-    # for colname in ("VirusSequences", "Peptides"):
     for colname in ("Entries"):
       try :
         self.db.createCollection(COL.VirusSequences)
