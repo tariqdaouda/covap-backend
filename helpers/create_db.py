@@ -51,7 +51,7 @@ class Populater(object):
     from pyGeno.tools.parsers.FastaTools import FastaFile
 
     def _parse_fasta_header(header):
-      accession = list(set(re.findall("NC_[0-9]+", header)))[0]
+      accession = list(set(re.findall(">(NC_[0-9]+)", header)))[0]
       if ".." in header :
         sub_accession = header.split("|")
         sub_accession = "|".join(sub_accession[:-2])[1:]#.join("|")
