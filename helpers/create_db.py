@@ -5,11 +5,12 @@ import re
 import pandas as pd
 import click
 
+
 class Populater(object):
   """docstring for Populater"""
   def __init__(self, url, username, password):
     super(Populater, self).__init__()
-    self. conn = CON.Connection(
+    self.conn = CON.Connection(
       arangoURL = url,
       username = username,
       password = password,
@@ -26,10 +27,10 @@ class Populater(object):
 
   def set_database(self):
     try :
-      self.db = self.conn.createDatabase("covap")
-    except PEXP.CreationError as e :
+      self.db = self.conn.createDatabase("Covap")
+    except Exception as e :
       print("Unable to create database: %s" % e)
-      self.db = self.conn["covap"]
+      self.db = self.conn["Covap"]
 
     for colname in ("Peptides", "VirusSequences"):
       try :
@@ -41,6 +42,9 @@ class Populater(object):
   def _line_to_dct(self, line):
     import numpy as np
 
+    if line.empty:
+      return None
+
     line = line.replace({np.nan: None})
     line = line.to_dict(orient="list")
     for key, val in line.items():
@@ -51,7 +55,8 @@ class Populater(object):
     from pyGeno.tools.parsers.FastaTools import FastaFile
 
     def _parse_fasta_header(header):
-      accession = list(set(re.findall(">(NC_[0-9]+)", header)))[0]
+      # accession = list(set(re.findall("[>|\(]([A-Z]{2}_[0-9]+)", header)))[0]
+      accession = list(set(re.findall("NC_[0-9]+", header)))[0]
       if ".." in header :
         sub_accession = header.split("|")
         sub_accession = "|".join(sub_accession[:-2])[1:]#.join("|")
@@ -76,8 +81,8 @@ class Populater(object):
       }
 
     print("loading meta...")
-    meta = pd.read_csv(metadata, sep=",")
-    print(meta.head())
+    meta_df = pd.read_csv(metadata, sep=",")
+    print(meta_df.head())
 
     entries = {}
     for file in (genome_sequences, cds_sequences):
@@ -91,8 +96,11 @@ class Populater(object):
         sequence = seq[1].replace("\n", "").replace("\r", "")
         entries[accession]["Sequence"] = sequence
         entries[accession]["Length"] = len(sequence)
-
-        meta_line = self._line_to_dct(meta[meta.Accession == accession].set_index("Accession"))
+        meta_line = self._line_to_dct(meta_df[meta_df.Accession == accession].set_index("Accession"))
+        if meta_line is None :
+          print(entries[accession], meta_df.Accession == accession)
+          print(meta_df)
+          stop
         entries[accession].update(meta_line)
     
     print("saving sequences...")
@@ -151,7 +159,7 @@ def populate(url, username, password, metadata, genome_sequences, cds_sequences,
   pop.set_database()
   pop.truncate()
   pop.populate_viruses(metadata, genome_sequences, cds_sequences)
-  pop.populate_peptides(predictions)
+  # pop.populate_peptides(predictions)
 
 if __name__ == '__main__':
   populate()
