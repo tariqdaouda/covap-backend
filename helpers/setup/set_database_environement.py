@@ -10,4 +10,6 @@ def set_env(url, username, password):
     os.environ['WEPITOPES_ARANGODB_URL'] = url
     os.environ['WEPITOPES_ARANGODB_USERNAME'] = username
     os.environ['WEPITOPES_ARANGODB_PASSWORD'] = password
- 
+    
+if __name__ == '__main__':
+    set_env()
