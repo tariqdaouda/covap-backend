@@ -1,59 +1,52 @@
+import os
+
 from setuptools import setup, find_packages
-from codecs import open
-from os import path
 
-here = path.abspath(path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'README.txt')) as f:
+    README = f.read()
+with open(os.path.join(here, 'CHANGES.txt')) as f:
+    CHANGES = f.read()
 
-# Get the long description from the relevant file
-# with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
-    # long_description = f.read()
-long_description="it's comming"
+requires = [
+    'plaster_pastedeploy',
+    'pyramid',
+    'pyramid_jinja2',
+    'pyramid_debugtoolbar',
+    'waitress',
+]
+
+tests_require = [
+    'WebTest >= 1.3.1',  # py3 compat
+    'pytest >= 3.7.4',
+    'pytest-cov',
+]
 
 setup(
-    name='covap-backend',
-
-    version='0.1',
-
-    description='COVAP Backend',
-    long_description=long_description,
-
-    url='https://github.com/tariqdaouda/covap-backend',
-
-    author='Tariq Daouda',
-    author_email='look for me on the internet',
-
-    license='ApacheV2',
-
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    name='wepitopes',
+    version='0.0',
+    description='wepitopes',
+    long_description=README + '\n\n' + CHANGES,
     classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        # 'Development Status :: 5 - Production/Stable',
-        'Development Status :: 4 - Beta',
-
-        'Intended Audience :: Developers',
-        # 'Intended Audience :: System Administrators',
-        # 'Topic :: Software Development :: Libraries',
-        # 'Topic :: Database',
-        # 'Topic :: Database :: Database Engines/Servers',
-
-        'License :: OSI Approved :: Apache Software License',
-
-        # 'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python',
+        'Framework :: Pyramid',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
     ],
-
-    install_requires=['pyArango', 'pandas', 'click', 'numpy', ],
-
-    keywords='database ORM nosql arangodb driver validation',
-
+    author='',
+    author_email='',
+    url='',
+    keywords='web pyramid pylons',
     packages=find_packages(),
-
+    include_package_data=True,
+    zip_safe=False,
+    extras_require={
+        'testing': tests_require,
+    },
+    install_requires=requires,
     entry_points={
-        'console_scripts': [
-            'sample=sample:main',
+        'paste.app_factory': [
+            'main = wepitopes:main',
         ],
     },
 )
