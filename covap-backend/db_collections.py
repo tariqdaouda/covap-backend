@@ -106,3 +106,5 @@ class Peptides(COL.Collection):
       "Score": "float",
       # "Sequence": COL.Field(validators=[VAL.NotNull()]),
   }
+
+__COLLECTIONS = [VirusSequences, Peptides]

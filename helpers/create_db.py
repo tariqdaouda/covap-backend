@@ -159,7 +159,7 @@ def populate(url, username, password, metadata, genome_sequences, cds_sequences,
   pop.set_database()
   pop.truncate()
   pop.populate_viruses(metadata, genome_sequences, cds_sequences)
-  # pop.populate_peptides(predictions)
+  pop.populate_peptides(predictions)
 
 if __name__ == '__main__':
   populate()
