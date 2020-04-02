@@ -5,7 +5,7 @@ from ..database import get_database
 from . import useful as us
 from .. import configuration as conf
 
-@view_config(route_name='api_get_fields', renderer='jsonp', method="GET")
+@view_config(route_name='api_get_fields', renderer='jsonp')
 def get_fields(request):
     """
     returns possible all fields for subsetting
