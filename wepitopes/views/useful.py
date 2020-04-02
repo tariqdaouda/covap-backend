@@ -1,4 +1,4 @@
-# from .. import configuration as conf
+from .. import configuration as conf
 import time
 
 class JSONResponse(dict):
