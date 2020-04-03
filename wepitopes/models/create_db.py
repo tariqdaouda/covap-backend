@@ -1,4 +1,4 @@
-import wepitope.models.db_collections as COL
+import db_collections as COL
 import pyArango.theExceptions as PEXP 
 import pyArango.connection as CON
 import re
@@ -56,20 +56,20 @@ class Populater(object):
 
     def _parse_fasta_header(header):
       # accession = list(set(re.findall("[>|\(]([A-Z]{2}_[0-9]+)", header)))[0]
-      accession = list(set(re.findall("NC_[0-9]+", header)))[0]
+      accession = list(set(re.findall("NC_[0-9]+", header)))[0].strip()
       if ".." in header :
         sub_accession = header.split("|")
-        sub_accession = "|".join(sub_accession[:-2])[1:]#.join("|")
+        sub_accession = "|".join(sub_accession[:-2])[1:].strip()
       else:
-        sub_accession = accession
+        sub_accession = accession.strip()
 
       try :
-        accession_version = list(set(re.findall("\.([0-9]+):", header)))[0]
+        accession_version = list(set(re.findall("\.([0-9]+):", header)))[0].strip()
       except IndexError:
         accession_version=None
 
       try :
-        protein_accession = list(set(re.findall("[Y|N]P_[0-9]+", header)))[0]
+        protein_accession = list(set(re.findall("[Y|N]P_[0-9]+", header)))[0].strip()
       except IndexError:
         protein_accession=None
       
@@ -90,17 +90,13 @@ class Populater(object):
       fasta.parseFile(file)
       for seq in fasta:
         header_info = _parse_fasta_header(seq[0])
-        accession = header_info["Accession"]
+        accession = header_info["Accession"].strip()
         entries[accession] = header_info
         
         sequence = seq[1].replace("\n", "").replace("\r", "")
         entries[accession]["Sequence"] = sequence
         entries[accession]["Length"] = len(sequence)
         meta_line = self._line_to_dct(meta_df[meta_df.Accession == accession].set_index("Accession"))
-        if meta_line is None :
-          print(entries[accession], meta_df.Accession == accession)
-          print(meta_df)
-          stop
         entries[accession].update(meta_line)
     
     print("saving sequences...")
@@ -124,7 +120,7 @@ class Populater(object):
       dct = row.to_dict()
       new_entry = self.db["Peptides"].createDocument()
       new_entry.set(dct)
-      new_entry["Accession"] = list(set(re.findall("NC_[0-9]+", dct["Sub_accession"])))[0]
+      new_entry["Accession"] = list(set(re.findall("NC_[0-9]+", dct["Sub_accession"])))[0].strip()
       entries.append(new_entry)
       
       if index > 0 and index % save_freq == 0:

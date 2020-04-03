@@ -6,7 +6,7 @@ class JSONResponse(dict):
     def __init__(self, messages=None, errors=None):
         super(JSONResponse, self).__init__()
 
-        self["timestamp"] = time.ctime()
+        self["timestamp"] = time.time()
         self["version"] = conf.API_VERSION
         self["payload"] = {}
 
@@ -71,40 +71,18 @@ def get_enumeration(db, collection, field, max_number=None):
     ret = db.AQLQuery(aql, rawResults=True, batchSize=1, bindVars={})
     return ret[0]
 
-def build_query(db, json_payload):
+def build_query(payload):
     from collections import defaultdict
-    # payload: {
-    #     query:{
-    #         Peptides.score: {
-    #             type: float,
-    #             range: [0.9, 1],
-    #         },
-    #         VirusSequence.region: {
-    #             type: enumeration,
-    #             cases: [wuhan]
-    #         },
-    #         Peptide.length: {
-    #             type: enumeration,
-    #             cases: [9]
-    #         },
-    #         VirusSequence.family: {
-    #             type: enumeration,
-    #             cases: [sars-cov2]
-    #         }
-    #     },
-    #     join: [VirusSequence.Sub_accession, Peptide.Sub_accession]
-    #     Limit: 5000
-    #     additional_fields:[VirusSequence.sequence]
-    # }
+    import json
 
     col_to_elmt = {}
     filters = defaultdict(list)
     ret = {}
-    for name, filt in json_payload["query"].items():
+    for name, filt in payload["query"].items():
         try :
             col_name, field = name.split(".")
         except :
-            return (False, "Every item must be in the format: Collection.field")
+            return (False, "query: Every item must be in the format: Collection.field")
 
         if col_name not in col_to_elmt:
             col_to_elmt[col_name] = "col%d" % len(col_to_elmt)
@@ -121,26 +99,38 @@ def build_query(db, json_payload):
         ret[name] = elmt
 
     if len(col_to_elmt) > 2:
-        print(col_to_elmt)
         return (False, "Maximum two collections")
 
-    if 'additional_fields' in json_payload:
-        for val in json_payload['additional_fields']:
+    if 'additional_fields' in payload:
+        for val in payload['additional_fields']:
             try :
                 sval1, sval2 = val.split(".")
             except :
-                return (False, "Every item must be in the format: Collection.field")
+                return (False, "additional_fields: Every item must be in the format: Collection.field")
             
             ret[val] = "%s.%s" % (sval1, sval2)
     
     limit = ""
-    if 'limit' in json_payload:
+    if 'limit' in payload:
         limit = "LIMIT %d" % limit
+    print(limit)
+    
+    sort = ""
+    if 'sort' in payload:
+        try:
+            col, field = payload["sort"]["field"].split(".")
+        except :
+            return (False, "sort: Every item must be in the format: Collection.field")
+
+        try:
+            sort = "SORT %s.%s %s" % (col_to_elmt[col], field, payload["sort"]["direction"])
+        except KeyError:
+            return (False, "Sort must have a direction: ASC, DESC, RAND")
 
     if len(col_to_elmt) == 2:
-        if "join" not in json_payload:
+        if "join" not in payload:
             return (False, "No join information given")
-        join = json_payload["join"]
+        join = payload["join"]
 
         if type(join) != list :
             return (False, "Join information must be an array")
@@ -152,7 +142,7 @@ def build_query(db, json_payload):
             join_col1, join_field1 = join[0].split(".")
             join_col2, join_field2 = join[1].split(".")
         except :
-            return (False, "Every join item must be in the format: Collection.field")
+            return (False, "join: Every join item must be in the format: Collection.field")
 
         try :
             join_elmt1, join_elmt2 = col_to_elmt[join_col1], col_to_elmt[join_col2]
@@ -169,57 +159,64 @@ def build_query(db, json_payload):
                 FOR {elmt2} IN {col2}
                     {join}
                     {filters2}
+                    {sort}
                     {limit}
                     RETURN {ret}
         """.format(
             elmt1 = col_to_elmt[join_col1], col1=join_col1, filters1='\n'.join(filters[join_col1]),
             join = join_str,
             elmt2 = col_to_elmt[join_col2], col2=join_col2, filters2='\n'.join(filters[join_col2]),
+            sort = sort,
             limit = limit,
-            ret = ret
+            ret = json.dumps(ret)#.replace('"', '')
         )
     else :
         col, element = col_to_elmt.items()[0]
         aql= """
             FOR {elmt} IN {col}
                 {filters}
+                {sort}
                 {limit}
                 RETURN {ret}
         """.format(
             elmt = element, col=col, filters='\n'.join(filters[col]),
             join = join_str,
+            sort = sort,
             limit = limit,
-            ret = ret
+            ret = json.dumps(ret).replace('"', '')
+
         )
 
-    print(aql)    
-    ret = db.AQLQuery(aql, rawResults=True, batchSize=1, bindVars={})
-    return (True, ret)
+    return (True, aql)
 
-if __name__ == '__main__':
-    dct ={
-        "payload": {
-            "query":{
-                "Peptides.score": {
-                    "type": "float",
-                    "range": [0.9, 1],
-                },
-                "VirusSequence.region": {
-                    "type": "enumeration",
-                    "cases": ["wuhan"]
-                },
-                "Peptides.length": {
-                    "type": "enumeration",
-                    "cases": [9]
-                },
-                "VirusSequence.family": {
-                    "type": "enumeration",
-                    "cases": ["sars-cov2"]
-                }
-            },
-            "join": ["VirusSequence.Sub_accession", "Peptides.Sub_accession"],
-            "Limit": 5000,
-            "additional_fields":["VirusSequence.sequence"]
-        }
-    }
-    print(build_query(None, dct["payload"]))
+# if __name__ == '__main__':
+#     dct ={
+#         "payload": {
+#             "query":{
+#                 "Peptides.score": {
+#                     "type": "float",
+#                     "range": [0.9, 1],
+#                 },
+#                 "VirusSequence.region": {
+#                     "type": "enumeration",
+#                     "cases": ["wuhan"]
+#                 },
+#                 "Peptides.length": {
+#                     "type": "enumeration",
+#                     "cases": [9]
+#                 },
+#                 "VirusSequence.family": {
+#                     "type": "enumeration",
+#                     "cases": ["sars-cov2"]
+#                 }
+#             },
+#             "join": ["VirusSequence.Sub_accession", "Peptides.Sub_accession"],
+#             "Limit": 5000,
+#             "sort": {
+#                 "field": "Peptides.score",
+#                 "direction": "ASC"
+#             },
+#             "additional_fields":["VirusSequence.sequence"]
+#         }
+#     }
+#     print(build_query(None, dct["payload"]))

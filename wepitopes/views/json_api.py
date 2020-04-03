@@ -15,7 +15,7 @@ def get_fields(request):
     of the back end
     """
     
-    limit = conf.ENUMERATION_LIMIT
+    limit = conf.DEFAULT_ENUMERATION_LIMIT
     try :
         if 'limit' in request.json:
             limit = request.json["limit"]
@@ -49,8 +49,8 @@ def get_fields(request):
     ret.set_payload(payload)
     return ret
 
-# @view_config(route_name='api_get_data', renderer='jsonp', method="GET")
-# def get_data(request):
+@view_config(route_name='api_get_data', renderer='jsonp')
+def get_data(request):
     # payload: {
     #     query:{
     #         score: {
@@ -73,3 +73,15 @@ def get_fields(request):
     #     Limit: 5000
     #     additional_fields:[sequence]
     # }
+    json_data = request.json
+    # return us.JSONResponse(errors = ["No json body found" ] )
+
+    check, aql_or_message = us.build_query(json_data["payload"])
+    if not check:
+        return us.JSONResponse(errors = [aql_or_message] )
+    print(aql_or_message)
+    db = get_database()
+    result = db.AQLQuery(aql_or_message, rawResults=True, batchSize=conf.DEFAULT_BATCH_SIZE, bindVars={})
+    ret = us.JSONResponse()
+    ret.set_payload(result.result)
+    return ret

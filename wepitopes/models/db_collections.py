@@ -45,24 +45,23 @@ class VirusSequences(COL.Collection):
 
   _field_types = {
       'Accession': "enumeration",
-      # 'Sequence': COL.Field(validators=[VAL.NotNull()]),
-      # 'Version': COL.Field(),
+      # 'Sequence': "enumeration",
+      'Version': "enumeration",
       'Sub_accession': "enumeration",
       'Protein_accession': "enumeration",
-      # 'Release_Date': "date",
+      'Release_Date': "enumeration",
       'Genus': "enumeration",
       'Family': "enumeration",
       'Length': "float",
-      # 'Nuc_Completeness': COL.Field(),
-      # 'Genotype': COL.Field(),
+      'Nuc_Completeness': "enumeration",
+      'Genotype': "enumeration",
       # 'Authors': COL.Field(),
       # 'Publications': COL.Field(),
       'Geo_Location': "enumeration",
       'Host': "enumeration",
-      # 'Authors': COL.Field(),
       'Isolation_Source': "enumeration",
-      # 'Collection_Date': COL.Field(),
-      # 'BioSample': COL.Field(),
+      'Collection_Date': "enumeration",
+      'BioSample': "enumeration",
       'GenBank_Title': "enumeration",
   }
 
@@ -96,15 +95,15 @@ class Peptides(COL.Collection):
   }
 
   _field_types = {
-      # "Method": COL.Field(validators=[VAL.NotNull()]),
-      # "Context_size": COL.Field(validators=[VAL.NotNull()]),
-      # "Model_run": COL.Field(validators=[VAL.NotNull()]),
+      "Method": "enumeration",
+      "Context_size": "enumeration",
+      "Model_run": "enumeration",
       "Accession": "enumeration",
       "Sub_accession": "enumeration",
       "Position": "float",
       "Length": "float",
       "Score": "float",
-      # "Sequence": COL.Field(validators=[VAL.NotNull()]),
+      "Sequence": "enumeratiob",
   }
 
 __COLLECTIONS = [VirusSequences, Peptides]
