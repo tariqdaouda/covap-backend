@@ -13,13 +13,13 @@ class JSONResponse(dict):
         if messages is None :
             self["messages"] = []
         else :
-            self["messages"] = self.set_messages(messages)
+            self.set_messages(messages)
      
         if errors is None :
             self["errors"] = []
             self["error"] = False
         else :
-            self["errors"] = self.set_errors(errors)
+            self.set_errors(errors)
             self["error"] = True
 
     def set_messages(self, messages):
@@ -38,6 +38,20 @@ class JSONResponse(dict):
 
     def set_payload(self, payload):
         self["payload"] = payload
+
+class AQLRet:
+    """dict like interface to build aql return statements"""
+    def __init__(self):
+        self.hashes = {}
+        self.values = []
+
+    def __setitem__(self, key, value):
+        hach = "retvalue%d"%len(self.hashes)
+        self.hashes[hach] = value
+        self.values.append( '"%s": {%s}' % (key, hach) )
+
+    def to_str(self):
+        return "{" + ', '.join(self.values).format(**self.hashes) + '}'
 
 def get_extremum(db, collection, field, direction):
     """get min/ or max for a field"""
@@ -71,13 +85,13 @@ def get_enumeration(db, collection, field, max_number=None):
     ret = db.AQLQuery(aql, rawResults=True, batchSize=1, bindVars={})
     return ret[0]
 
-def build_query(payload):
+def build_query(payload, print_aql):
     from collections import defaultdict
     import json
 
     col_to_elmt = {}
     filters = defaultdict(list)
-    ret = {}
+    ret = AQLRet()
     for name, filt in payload["query"].items():
         try :
             col_name, field = name.split(".")
@@ -108,12 +122,15 @@ def build_query(payload):
             except :
                 return (False, "additional_fields: Every item must be in the format: Collection.field")
             
-            ret[val] = "%s.%s" % (sval1, sval2)
+            try :
+                ret[val] = "%s.%s" % (col_to_elmt[sval1], sval2)
+            except KeyError:
+                return (False, "additional_fields: Collections must be mentioned in query")
     
-    limit = ""
-    if 'limit' in payload:
-        limit = "LIMIT %d" % limit
-    print(limit)
+    try:
+        limit = "LIMIT %d" % payload["limit"]
+    except:
+        limit = ""
     
     sort = ""
     if 'sort' in payload:
@@ -168,10 +185,10 @@ def build_query(payload):
             elmt2 = col_to_elmt[join_col2], col2=join_col2, filters2='\n'.join(filters[join_col2]),
             sort = sort,
             limit = limit,
-            ret = json.dumps(ret)#.replace('"', '')
+            ret = ret.to_str()
         )
     else :
-        col, element = col_to_elmt.items()[0]
+        col, element = list(col_to_elmt.items())[0]
         aql= """
             FOR {elmt} IN {col}
                 {filters}
@@ -180,43 +197,12 @@ def build_query(payload):
                 RETURN {ret}
         """.format(
             elmt = element, col=col, filters='\n'.join(filters[col]),
-            join = join_str,
             sort = sort,
             limit = limit,
-            ret = json.dumps(ret).replace('"', '')
-
+            ret = ret.to_str()
         )
 
-    return (True, aql)
+    if print_aql:
+        print(aql)
 
-# if __name__ == '__main__':
-#     dct ={
-#         "payload": {
-#             "query":{
-#                 "Peptides.score": {
-#                     "type": "float",
-#                     "range": [0.9, 1],
-#                 },
-#                 "VirusSequence.region": {
-#                     "type": "enumeration",
-#                     "cases": ["wuhan"]
-#                 },
-#                 "Peptides.length": {
-#                     "type": "enumeration",
-#                     "cases": [9]
-#                 },
-#                 "VirusSequence.family": {
-#                     "type": "enumeration",
-#                     "cases": ["sars-cov2"]
-#                 }
-#             },
-#             "join": ["VirusSequence.Sub_accession", "Peptides.Sub_accession"],
-#             "Limit": 5000,
-#             "sort": {
-#                 "field": "Peptides.score",
-#                 "direction": "ASC"
-#             },
-#             "additional_fields":["VirusSequence.sequence"]
-#         }
-#     }
-#     print(build_query(None, dct["payload"]))
+    return (True, aql)

@@ -51,37 +51,15 @@ def get_fields(request):
 
 @view_config(route_name='api_get_data', renderer='jsonp')
 def get_data(request):
-    # payload: {
-    #     query:{
-    #         score: {
-    #             type: float,
-    #             range: [0.9, 1],
-    #         },
-    #         region: {
-    #             type: enumeration,
-    #             cases: [wuhan]
-    #         },
-    #         length: {
-    #             type: enumeration,
-    #             cases: [9]
-    #         },
-    #         virus: {
-    #             type: enumeration,
-    #             cases: [sars-cov2]
-    #         }
-    #     },
-    #     Limit: 5000
-    #     additional_fields:[sequence]
-    # }
     json_data = request.json
-    # return us.JSONResponse(errors = ["No json body found" ] )
-
-    check, aql_or_message = us.build_query(json_data["payload"])
+    
+    check, aql_or_message = us.build_query(json_data["payload"], print_aql=False)
     if not check:
         return us.JSONResponse(errors = [aql_or_message] )
-    print(aql_or_message)
+
     db = get_database()
     result = db.AQLQuery(aql_or_message, rawResults=True, batchSize=conf.DEFAULT_BATCH_SIZE, bindVars={})
+    
     ret = us.JSONResponse()
     ret.set_payload(result.result)
     return ret

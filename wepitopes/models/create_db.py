@@ -1,4 +1,4 @@
-import db_collections as COL
+from . import db_collections as COL
 import pyArango.theExceptions as PEXP 
 import pyArango.connection as CON
 import re
