@@ -3,14 +3,14 @@ import pyArango.validation as VAL
 
 class VirusSequences(COL.Collection):
 
-  # _properties = {
-  #     "keyOptions" : {
-  #         "allowUserKeys": False,
-  #         "type": "autoincrement",
-  #         "increment": 1,
-  #         "offset": 0,
-  #     }
-  # }
+  _properties = {
+      "keyOptions" : {
+          "allowUserKeys": False,
+          "type": "autoincrement",
+          "increment": 1,
+          "offset": 0,
+      }
+  }
 
   _validation = {
       'on_save': True,
@@ -19,6 +19,7 @@ class VirusSequences(COL.Collection):
   }
 
   _fields = {
+      "Index": COL.Field(validators=[VAL.NotNull()]),
       'Accession': COL.Field(validators=[VAL.NotNull()]),
       'Sequence': COL.Field(validators=[VAL.NotNull()]),
       'Version': COL.Field(),
@@ -44,6 +45,7 @@ class VirusSequences(COL.Collection):
   }
 
   _field_types = {
+      'Index': 'floar',
       'Accession': "enumeration",
       # 'Sequence': "enumeration",
       'Version': "enumeration",
@@ -67,14 +69,14 @@ class VirusSequences(COL.Collection):
 
 class Peptides(COL.Collection):
 
-  # _properties = {
-  #     "keyOptions" : {
-  #         "allowUserKeys": False,
-  #         "type": "autoincrement",
-  #         "increment": 1,
-  #         "offset": 0,
-  #     }
-  # }
+  _properties = {
+      "keyOptions" : {
+          "allowUserKeys": False,
+          "type": "autoincrement",
+          "increment": 1,
+          "offset": 0,
+      }
+  }
 
   _validation = {
       'on_save': True,
@@ -83,6 +85,7 @@ class Peptides(COL.Collection):
   }
 
   _fields = {
+      "Index": COL.Field(validators=[VAL.NotNull()]),
       "Method": COL.Field(validators=[VAL.NotNull()]),
       "Context_size": COL.Field(validators=[VAL.NotNull()]),
       "Model_run": COL.Field(validators=[VAL.NotNull()]),
@@ -95,6 +98,7 @@ class Peptides(COL.Collection):
   }
 
   _field_types = {
+      "Index": "float",
       "Method": "enumeration",
       "Context_size": "enumeration",
       "Model_run": "enumeration",

@@ -1,4 +1,8 @@
-from . import db_collections as COL
+try :
+  from . import db_collections as COL
+except :
+  import db_collections as COL
+
 import pyArango.theExceptions as PEXP 
 import pyArango.connection as CON
 import re
@@ -85,6 +89,7 @@ class Populater(object):
     print(meta_df.head())
 
     entries = {}
+    index = 0
     for file in (genome_sequences, cds_sequences):
       fasta = FastaFile()
       fasta.parseFile(file)
@@ -98,7 +103,9 @@ class Populater(object):
         entries[accession]["Length"] = len(sequence)
         meta_line = self._line_to_dct(meta_df[meta_df.Accession == accession].set_index("Accession"))
         entries[accession].update(meta_line)
-    
+        entries[accession]["Index"] = index
+        index += 1
+
     print("saving sequences...")
     self.db["VirusSequences"].bulkSave(entries.values())
     print("\tsaved:", len(entries))
@@ -120,14 +127,19 @@ class Populater(object):
       dct = row.to_dict()
       new_entry = self.db["Peptides"].createDocument()
       new_entry.set(dct)
+      new_entry["Index"] = index
       new_entry["Accession"] = list(set(re.findall("NC_[0-9]+", dct["Sub_accession"])))[0].strip()
       entries.append(new_entry)
       
       if index > 0 and index % save_freq == 0:
+        print("\tsaving: %d..." % save_freq)
         self.db["Peptides"].bulkSave(entries)
         entries = []
 
+    print("\tsaving remaining...")
     self.db["Peptides"].bulkSave(entries)
+    print("\tsaved total: %d" % (index+1))
+
     print("building indexes...")
     self.db["VirusSequences"].ensureHashIndex(["Sequence"], unique=False, sparse=True, deduplicate=False, name=None)
     for name, typ in COL.VirusSequences._field_types.items():

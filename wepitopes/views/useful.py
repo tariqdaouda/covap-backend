@@ -103,9 +103,20 @@ def build_query(payload, print_aql):
         elmt = "%s.%s" % (col_to_elmt[col_name], field )
         
         if filt["type"] == "float":
+            ranges = []
+            if filt["range"][0] != ":":
+                ranges.append(
+                    "{elmt} >= {min}".format(elmt=elmt, min=filt["range"][0], max=filt["range"][1])
+                )
+            if filt["range"][1] != ":":
+                ranges.append(
+                    "{elmt} <= {max}".format(elmt=elmt, min=filt["range"][0], max=filt["range"][1])
+                )
+
             filters[col_name].append(
-                "FILTER {elmt} >= {min} && {elmt} <= {max}".format(elmt=elmt, min=filt["range"][0], max=filt["range"][1])
-            )
+                    "FILTER  %s" % (" && ".join(ranges))
+                )
+
         elif filt["type"] == "enumeration":
             filters[col_name].append(
                 "FILTER {elmt} IN {vals}".format(elmt=elmt, vals=filt["cases"])
