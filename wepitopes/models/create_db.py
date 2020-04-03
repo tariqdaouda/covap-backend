@@ -141,12 +141,12 @@ class Populater(object):
     print("\tsaved total: %d" % (index+1))
 
     print("building indexes...")
-    self.db["VirusSequences"].ensureHashIndex(["Sequence"], unique=False, sparse=True, deduplicate=False, name=None)
-    for name, typ in COL.VirusSequences._field_types.items():
+    self.db["Peptides"].ensureHashIndex(["Sequence"], unique=False, sparse=True, deduplicate=False, name=None)
+    for name, typ in COL.Peptides._field_types.items():
       if typ == "enumeration":
-        self.db["VirusSequences"].ensureHashIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
+        self.db["Peptides"].ensureHashIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
       elif typ == "float":
-        self.db["VirusSequences"].ensureSkiplistIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
+        self.db["Peptides"].ensureSkiplistIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
 
     print("done.")
 
