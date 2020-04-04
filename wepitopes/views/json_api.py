@@ -53,7 +53,11 @@ def get_fields(request):
 def get_data(request):
     json_data = request.json
     
-    check, aql_or_message = us.build_query(json_data["payload"], print_aql=False)
+    try:
+        check, aql_or_message = us.build_query(json_data["payload"], print_aql=False)
+    except Exception as e:
+        return us.JSONResponse(errors = ["Unable to prossess requests. Please verify format"] )
+        
     if not check:
         return us.JSONResponse(errors = [aql_or_message] )
 
