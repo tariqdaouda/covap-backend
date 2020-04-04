@@ -38,7 +38,7 @@ setup(
     author='',
     author_email='',
     url='',
-    keywords='web pyramid pylons',
+    keywords='web pyramid pylons covid-19 virus epitopes',
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
