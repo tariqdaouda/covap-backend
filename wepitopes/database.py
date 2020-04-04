@@ -15,7 +15,7 @@ def includeme(config):
     print(url, username, password)
 
     if url is None or username is None or password is None:
-        print("Erro: please enironement vaiables: WEPITOPES_ARANGODB_URL, WEPITOPES_ARANGODB_USERNAME, WEPITOPES_ARANGODB_PASSWORD")
+        print("Error: please set environement vaiables: WEPITOPES_ARANGODB_URL, WEPITOPES_ARANGODB_USERNAME, WEPITOPES_ARANGODB_PASSWORD")
         return 
 
     _DB_CONNECTION = CON.Connection(

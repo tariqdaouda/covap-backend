@@ -154,6 +154,8 @@ def build_query(payload, print_aql):
             sort = "SORT %s.%s %s" % (col_to_elmt[col], field, payload["sort"]["direction"])
         except KeyError:
             return (False, "Sort must have a direction: ASC, DESC, RAND")
+        
+        ret[payload["sort"]["field"]] = "%s.%s" % (col_to_elmt[col], field)
 
     if len(col_to_elmt) == 2:
         if "join" not in payload:
