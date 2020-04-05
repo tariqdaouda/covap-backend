@@ -85,6 +85,31 @@ def get_enumeration(db, collection, field, max_number=None):
     ret = db.AQLQuery(aql, rawResults=True, batchSize=1, bindVars={})
     return ret[0]
 
+def get_fields(db, collections, limit):
+    payload = {}
+    for col_cls in collections:
+        col_name = col_cls.__name__
+        payload[col_name] = {}
+        for field_name in col_cls._fields.keys():
+            typ = col_cls._field_types.get(field_name)
+            if typ=="float":
+                field_dct = {"type": typ}
+                min_val = get_extremum(db, col_name, field_name, "ASC")
+                max_val = get_extremum(db, col_name, field_name, "DESC")
+                field_dct["range"] = [min_val, max_val]
+            elif typ=="enumeration":
+                field_dct = {"type": typ}
+                try:
+                    field_dct.update(get_enumeration(db, col_name, field_name, limit))
+                except Exception as e:
+                    print(e)
+                    return (False, ["Invalid request for field %s of %s" % (field_name, col_name)] ) 
+            else:
+                field_dct = {"type": "other"}
+            
+            payload[col_name][field_name] = field_dct
+    return (True, payload)
+
 def build_query(payload, print_aql):
     from collections import defaultdict
     import json

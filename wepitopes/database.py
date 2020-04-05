@@ -12,7 +12,7 @@ def includeme(config):
     username = os.environ.get('WEPITOPES_ARANGODB_USERNAME')
     password = os.environ.get('WEPITOPES_ARANGODB_PASSWORD')
 
-    print(url, username, password)
+    # print(url, username, password)
 
     if url is None or username is None or password is None:
         print("Error: please set environement vaiables: WEPITOPES_ARANGODB_URL, WEPITOPES_ARANGODB_USERNAME, WEPITOPES_ARANGODB_PASSWORD")

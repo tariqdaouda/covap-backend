@@ -1,5 +1,14 @@
+echo "404"
+curl -i http://127.0.0.1:6543/api/tratra -X GET -H "Content-Type: application/json"
+
 echo "Get fields, limit the enumeration lists to 20"
-curl -i http://127.0.0.1:6543/api/get-fields -X GET -H "Content-Type: application/json" --data '{limit: 20}'
+curl -i http://127.0.0.1:6543/api/get-fields -X GET -H "Content-Type: application/json" --data '{"limit": 20}'
+
+echo "Get fields, limit the enumeration lists to 20"
+curl -i http://127.0.0.1:6543/api/get-fields/limit/20 -X GET -H "Content-Type: application/json"
+
+echo "Get fields for collection VirusSequences, limit the enumeration lists to 20"
+curl -i http://127.0.0.1:6543/api/get-fields/VirusSequences/limit/20 -X GET -H "Content-Type: application/json"
 
 echo "Get values with join"
 curl -i http://127.0.0.1:6543/api/get-data -X GET -H "Content-Type: application/json" --data '{

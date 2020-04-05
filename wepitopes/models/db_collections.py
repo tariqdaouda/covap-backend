@@ -110,4 +110,4 @@ class Peptides(COL.Collection):
       "Sequence": "enumeratiob",
   }
 
-__COLLECTIONS = [VirusSequences, Peptides]
+__COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides] }
