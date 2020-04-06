@@ -15,9 +15,14 @@ def get_fields(request):
     of the back end
     """
     limit = conf.DEFAULT_ENUMERATION_LIMIT
-    if 'limit' in request.json:
+    try:
+        json_data = request.json
+    except Exception as e:
+        return us.JSONResponse(errors = ["Invalid json body"])
+    
+    if 'limit' in json_data:
         try :
-            limit = int(request.json["limit"])
+            limit = int(json_data["limit"])
         except Exception as e:
             us.JSONResponse(errors = ["limit must be a valid integer"])
 
