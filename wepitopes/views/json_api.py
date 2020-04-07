@@ -5,7 +5,7 @@ from ..database import get_database
 from . import useful as us
 from .. import configuration as conf
 
-@view_config(route_name='api_get_fields', renderer='jsonp')
+@view_config(route_name='api_get_fields', renderer='jsonp', request_method="POST")
 def get_fields(request):
     """
     returns possible all fields for subsetting
@@ -35,7 +35,7 @@ def get_fields(request):
     ret.set_payload(payload)
     return ret
 
-@view_config(route_name='api_get_fields_limit', renderer='jsonp')
+@view_config(route_name='api_get_fields_limit', renderer='jsonp', request_method="GET")
 def get_fields_limit(request):
     """
     returns possible all fields.
@@ -56,7 +56,7 @@ def get_fields_limit(request):
     ret.set_payload(payload)
     return ret
 
-@view_config(route_name='api_get_collection_fields_limit', renderer='jsonp')
+@view_config(route_name='api_get_collection_fields_limit', renderer='jsonp', request_method="GET")
 def get_collection_fields_limit(request):
     """
     returns possible all fields for a collection
@@ -83,9 +83,12 @@ def get_collection_fields_limit(request):
     ret.set_payload(payload)
     return ret
 
-@view_config(route_name='api_get_data', renderer='jsonp')
+@view_config(route_name='api_get_data', renderer='jsonp', request_method="POST")
 def get_data(request):
-    json_data = request.json
+    try:
+        json_data = request.json
+    except Exception as e:
+        return us.JSONResponse(errors = ["Invalid json body"])
     
     try:
         check, aql_or_message = us.build_query(json_data["payload"], print_aql=False)
