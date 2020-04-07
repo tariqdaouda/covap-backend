@@ -170,17 +170,20 @@ def build_query(payload, print_aql):
     
     sort = ""
     if 'sort' in payload:
-        try:
-            col, field = payload["sort"]["field"].split(".")
-        except :
-            return (False, "sort: Every item must be in the format: Collection.field")
+        if payload["sort"]["direction"].upper() == "RAND":
+            sort = "SORT RAND()"
+        else:
+            try:
+                col, field = payload["sort"]["field"].split(".")
+            except :
+                return (False, "sort: Every item must be in the format: Collection.field")
 
-        try:
-            sort = "SORT %s.%s %s" % (col_to_elmt[col], field, payload["sort"]["direction"])
-        except KeyError:
-            return (False, "Sort must have a direction: ASC, DESC, RAND")
+            try:
+                sort = "SORT %s.%s %s" % (col_to_elmt[col], field, payload["sort"]["direction"])
+            except KeyError:
+                return (False, "Sort must have a direction: ASC, DESC, RAND")
         
-        ret[payload["sort"]["field"]] = "%s.%s" % (col_to_elmt[col], field)
+            ret[payload["sort"]["field"]] = "%s.%s" % (col_to_elmt[col], field)
 
     if len(col_to_elmt) == 2:
         if "join" not in payload:
