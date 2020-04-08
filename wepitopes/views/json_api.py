@@ -5,6 +5,7 @@ from ..database import get_database
 from . import useful as us
 from .. import configuration as conf
 
+@view_config(route_name='api_get_data', renderer='jsonp', request_method="OPTIONS")
 @view_config(route_name='api_get_fields', renderer='jsonp', request_method="POST")
 def get_fields(request):
     """
@@ -35,6 +36,7 @@ def get_fields(request):
     ret.set_payload(payload)
     return ret
 
+@view_config(route_name='api_get_data', renderer='jsonp', request_method="OPTIONS")
 @view_config(route_name='api_get_fields_limit', renderer='jsonp', request_method="GET")
 def get_fields_limit(request):
     """
@@ -56,6 +58,7 @@ def get_fields_limit(request):
     ret.set_payload(payload)
     return ret
 
+@view_config(route_name='api_get_data', renderer='jsonp', request_method="OPTIONS")
 @view_config(route_name='api_get_collection_fields_limit', renderer='jsonp', request_method="GET")
 def get_collection_fields_limit(request):
     """
@@ -83,6 +86,7 @@ def get_collection_fields_limit(request):
     ret.set_payload(payload)
     return ret
 
+@view_config(route_name='api_get_data', renderer='jsonp', request_method="OPTIONS")
 @view_config(route_name='api_get_data', renderer='jsonp', request_method="POST")
 def get_data(request):
     try:
