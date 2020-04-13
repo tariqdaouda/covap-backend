@@ -32,7 +32,7 @@ def get_fields(request):
     if not check:
         return us.JSONResponse(errors = payload)
 
-    ret = us.JSONResponse() 
+    ret = us.JSONResponse()
     ret.set_payload(payload)
     return ret
 
@@ -108,3 +108,4 @@ def get_data(request):
     ret = us.JSONResponse()
     ret.set_payload(result.result)
     return ret
+
