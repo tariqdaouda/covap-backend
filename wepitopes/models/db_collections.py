@@ -107,7 +107,7 @@ class Peptides(COL.Collection):
       "Position": "float",
       "Length": "float",
       "Score": "float",
-      "Sequence": "enumeratiob",
+      "Sequence": "enumeration",
   }
 
 __COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides] }
