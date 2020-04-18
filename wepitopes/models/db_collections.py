@@ -105,7 +105,7 @@ class Peptides(COL.Collection):
       "Accession": "enumeration",
       "Sub_accession": "enumeration",
       "Position": "float",
-      "Length": "float",
+      "Length": "enumeration",
       "Score": "float",
       "Sequence": "enumeration",
   }
