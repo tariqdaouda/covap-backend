@@ -95,7 +95,7 @@ def get_data(request):
         return us.JSONResponse(errors = ["Invalid json body"])
     
     try:
-        check, aql_or_message = us.build_query(json_data["payload"], print_aql=False)
+        check, aql_or_message = us.build_query(COL.__COLLECTIONS.values(), json_data["payload"], print_aql=False)
     except Exception as e:
         return us.JSONResponse(errors = ["Unable to prossess requests. Please verify format"] )
         

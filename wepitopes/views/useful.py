@@ -79,15 +79,15 @@ def get_enumeration(db, collection, field, max_number=None):
         )
         RETURN {{
             unique: LENGTH(val),
-            values: SLICE(val, 0{max_number})
+            cases: SLICE(val, 0{max_number})
         }}
     """.format(collection = collection, field = field, max_number=max_number)
     ret = db.AQLQuery(aql, rawResults=True, batchSize=1, bindVars={})
     return ret[0]
 
-def get_fields(db, collections, limit):
+def get_fields(db, db_collections, limit):
     payload = {}
-    for col_cls in collections:
+    for col_cls in db_collections:
         col_name = col_cls.__name__
         payload[col_name] = {}
         for field_name in col_cls._fields.keys():
@@ -110,43 +110,56 @@ def get_fields(db, collections, limit):
             payload[col_name][field_name] = field_dct
     return (True, payload)
 
-def build_query(payload, print_aql):
+def build_query(db_collections, payload, print_aql):
     from collections import defaultdict
     import json
+
+    types = {}
+    for col_cls in db_collections:
+        col_name = col_cls.__name__
+        for field_name, typ in col_cls._field_types.items():
+            types["%s.%s" % (col_name, field_name)] = typ
 
     col_to_elmt = {}
     filters = defaultdict(list)
     ret = AQLRet()
     for name, filt in payload["query"].items():
-        try :
-            col_name, field = name.split(".")
-        except :
-            return (False, "query: Every item must be in the format: Collection.field")
+        if len(filt["values"]) > 0 :
+            try :
+                col_name, field = name.split(".")
+            except :
+                return (False, "query: Every item must be in the format: Collection.field")
 
-        if col_name not in col_to_elmt:
-            col_to_elmt[col_name] = "col%d" % len(col_to_elmt)
-        elmt = "%s.%s" % (col_to_elmt[col_name], field )
-        
-        if filt["type"] == "float":
-            ranges = []
-            if filt["range"][0] != ":":
-                ranges.append(
-                    "{elmt} >= {min}".format(elmt=elmt, min=filt["range"][0], max=filt["range"][1])
-                )
-            if filt["range"][1] != ":":
-                ranges.append(
-                    "{elmt} <= {max}".format(elmt=elmt, min=filt["range"][0], max=filt["range"][1])
-                )
+            if col_name not in col_to_elmt:
+                col_to_elmt[col_name] = "col%d" % len(col_to_elmt)
+            elmt = "%s.%s" % (col_to_elmt[col_name], field )
+            
+            if types[name] == "float":
+                ranges = []
+                if filt["values"][0] != ":":
+                    ranges.append(
+                        "{elmt} >= {min}".format(elmt=elmt, min=filt["values"][0], max=filt["values"][1])
+                    )
+                if filt["values"][1] != ":":
+                    ranges.append(
+                        "{elmt} <= {max}".format(elmt=elmt, min=filt["values"][0], max=filt["values"][1])
+                    )
 
-            filters[col_name].append(
-                    "FILTER  %s" % (" && ".join(ranges))
-                )
+                filters[col_name].append(
+                        "FILTER  %s" % (" && ".join(ranges))
+                    )
 
-        elif filt["type"] == "enumeration":
-            filters[col_name].append(
-                "FILTER {elmt} IN {vals}".format(elmt=elmt, vals=filt["cases"])
-            )
-        ret[name] = elmt
+            elif types[name] == "enumeration":
+                if len(filt["values"]) > conf.MAX_ENUMERATION_QUERY:
+                    return (
+                        False, "query: Too many cases for: %s, max is: %s" % (
+                        name, conf.MAX_ENUMERATION_QUERY)
+                    )
+
+                filters[col_name].append(
+                    "FILTER {elmt} IN {vals}".format(elmt=elmt, vals=filt["values"])
+                )
+            ret[name] = elmt
 
     if len(col_to_elmt) > 2:
         return (False, "Maximum two collections")

@@ -15,15 +15,12 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Score": {
-                    "type": "float",
                     "range": [0.7, 1]
                 },
                 "Peptides.Length": {
-                    "type": "enumeration",
                     "cases": [9]
                 },
                 "VirusSequences.Family": {
-                    "type": "enumeration",
                     "cases": ["Coronaviridae"]
                 }
             },
@@ -42,7 +39,6 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Score": {
-                    "type": "float",
                     "range": [0.7, 1]
                 }
             },
@@ -60,7 +56,6 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Score": {
-                    "type": "float",
                     "range": [0.7, ":"]
                 }
             },
@@ -78,7 +73,6 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Index": {
-                    "type": "float",
                     "range": [10, ":"]
                 }
             },
@@ -96,7 +90,6 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
                 "query":{
                     "Peptides.Score": {
-                        "type": "float",
                         "range": [0, ":"]
                     }
                 },
