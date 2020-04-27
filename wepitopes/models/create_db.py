@@ -60,20 +60,17 @@ class Populater(object):
 
     def _parse_fasta_header(header):
       # accession = list(set(re.findall("[>|\(]([A-Z]{2}_[0-9]+)", header)))[0]
-      accession = list(set(re.findall("NC_[0-9]+", header)))[0].strip()
-      if ".." in header :
-        sub_accession = header.split("|")
-        sub_accession = "|".join(sub_accession[:-2])[1:].strip()
-      else:
-        sub_accession = accession.strip()
+      accession = re.findall("(NC_[0-9]+(\.[0-9]+)?)", header)[0][0].strip()
+
+      try:
+        accession, accession_version = accession.split('.')
+      except ValueError:
+        accession_version = None
+
+      sub_accession = re.findall("(NC_.+?)(\||$)", header)[0][0].strip()
 
       try :
-        accession_version = list(set(re.findall("\.([0-9]+):", header)))[0].strip()
-      except IndexError:
-        accession_version=None
-
-      try :
-        protein_accession = list(set(re.findall("[Y|N]P_[0-9]+", header)))[0].strip()
+        protein_accession = re.findall("([Y|N]P_[0-9]+(\.[0-9]+)?)", header)[0][0].strip()
       except IndexError:
         protein_accession=None
       
@@ -85,7 +82,7 @@ class Populater(object):
       }
 
     print("loading meta...")
-    meta_df = pd.read_csv(metadata, sep=",")
+    meta_df = pd.read_csv(metadata, sep="\t")
     print(meta_df.head())
 
     entries = {}
