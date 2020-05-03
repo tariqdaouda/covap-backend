@@ -8,6 +8,7 @@ import pyArango.connection as CON
 import re
 import pandas as pd
 import click
+from tqdm import tqdm
 
 
 class Populater(object):
@@ -126,7 +127,7 @@ class Populater(object):
       elif typ == "float":
         self.db["VirusSequences"].ensureSkiplistIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
 
-  def populate_peptides(self, predictions, save_freq=10000):
+  def populate_peptides(self, predictions, save_freq=100000):
     import numpy as np
 
     print("saving entries...")
@@ -134,10 +135,11 @@ class Populater(object):
         'Peptide_start_one_based': 'Position',
         'Peptide_length': 'Length',
         'Peptide_sequence': 'Sequence'}, axis=1).replace({np.nan:None})
+    db_keys = [x for x in self.db["Peptides"]._fields.keys() if x != 'Index']
+    preds = preds[db_keys]
     entries = []
-    for index, row in preds.iterrows():
-      db_keys = [x for x in self.db["Peptides"]._fields.keys() if x != 'Index']
-      dct = row[db_keys].to_dict()
+    for index, row in tqdm(preds.iterrows(), total=preds.shape[0]):
+      dct = row.to_dict()
       new_entry = self.db["Peptides"].createDocument()
       new_entry.set(dct)
       new_entry["Index"] = index
@@ -145,7 +147,7 @@ class Populater(object):
       entries.append(new_entry)
 
       if index > 0 and index % save_freq == 0:
-        print("\tsaving: %d..." % save_freq)
+        print("\r\tsaving: %d..." % save_freq)
         self.db["Peptides"].bulkSave(entries)
         entries = []
 
