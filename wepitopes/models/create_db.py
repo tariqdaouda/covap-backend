@@ -127,11 +127,13 @@ class Populater(object):
         self.db["VirusSequences"].ensureSkiplistIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
 
   def populate_peptides(self, predictions, save_freq=10000):
+    import numpy as np
+
     print("saving entries...")
     preds = pd.read_csv(predictions, sep="\t", low_memory=False).rename({
         'Peptide_start_one_based': 'Position',
         'Peptide_length': 'Length',
-        'Peptide_sequence': 'Sequence'}, axis=1)
+        'Peptide_sequence': 'Sequence'}, axis=1).replace({np.nan:None})
     entries = []
     for index, row in preds.iterrows():
       db_keys = [x for x in self.db["Peptides"]._fields.keys() if x != 'Index']
