@@ -3,7 +3,7 @@ try :
 except :
   import db_collections as COL
 
-import pyArango.theExceptions as PEXP 
+import pyArango.theExceptions as PEXP
 import pyArango.connection as CON
 import re
 import pandas as pd
@@ -73,7 +73,7 @@ class Populater(object):
         protein_accession = re.findall("([Y|N]P_[0-9]+(\.[0-9]+)?)", header)[0][0].strip()
       except IndexError:
         protein_accession = None
-      
+
       if not protein_accession is None:
         sub_accession = 'CDS_of_' + protein_accession
       else:
@@ -104,7 +104,7 @@ class Populater(object):
         else:
             unique_accession = accession
         entries[unique_accession] = header_info
-        
+
         sequence = seq[1].replace("\n", "").replace("\r", "")
         entries[unique_accession]["Sequence"] = sequence
         entries[unique_accession]["Length"] = len(sequence)
@@ -141,7 +141,7 @@ class Populater(object):
       new_entry["Index"] = index
       #new_entry["Accession"] = list(set(re.findall("NC_[0-9]+", dct["Sub_accession"])))[0].strip()
       entries.append(new_entry)
-      
+
       if index > 0 and index % save_freq == 0:
         print("\tsaving: %d..." % save_freq)
         self.db["Peptides"].bulkSave(entries)
