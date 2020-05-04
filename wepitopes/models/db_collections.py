@@ -95,7 +95,8 @@ class Peptides(COL.Collection):
       "Position": COL.Field(),  # temporarily
       "Length": COL.Field(validators=[VAL.NotNull()]),
       "Sequence": COL.Field(validators=[VAL.NotNull()]),
-      "Score": COL.Field(validators=[VAL.NotNull()])
+      "Score": COL.Field(validators=[VAL.NotNull()]),
+      "Name": COL.Field(validators=[VAL.NotNull()])
   }
 
   _field_types = {
