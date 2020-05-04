@@ -5,6 +5,19 @@ from ..database import get_database
 from . import useful as us
 from .. import configuration as conf
 
+@view_config(route_name='vital', renderer='jsonp', request_method="OPTIONS")
+@view_config(route_name='vital', renderer='jsonp', request_method="GET")
+def vital(request):
+    """
+    Returns a random peptide to check that everything is up
+    """
+    db = get_database()
+    payload = db["Peptides"].fetchFirstExample({"length": 9}, rawResults=True).result
+    ret = us.JSONResponse()
+    ret.set_payload(payload)
+    return ret
+
+
 @view_config(route_name='api_get_fields', renderer='jsonp', request_method="OPTIONS")
 @view_config(route_name='api_get_fields', renderer='jsonp', request_method="POST")
 def get_fields(request):

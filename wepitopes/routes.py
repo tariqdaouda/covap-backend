@@ -6,4 +6,5 @@ def includeme(config):
     config.add_route('api_get_fields_limit', '/get-fields/limit/{limit}')
     config.add_route('api_get_collection_fields_limit', '/get-fields/{collection}/limit/{limit}')
     config.add_route('api_get_data', '/get-data')
+    config.add_route('vital', '/vital')
     config.add_route('home', '/')
