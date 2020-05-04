@@ -3,11 +3,12 @@ try :
 except :
   import db_collections as COL
 
-import pyArango.theExceptions as PEXP 
+import pyArango.theExceptions as PEXP
 import pyArango.connection as CON
 import re
 import pandas as pd
 import click
+from tqdm import tqdm
 
 
 class Populater(object):
@@ -67,18 +68,24 @@ class Populater(object):
       except ValueError:
         accession_version = None
 
-      sub_accession = re.findall("(NC_.+?)(\||$)", header)[0][0].strip()
+      location = re.findall("(NC_.+?)(\||$)", header)[0][0].strip()
 
       try :
         protein_accession = re.findall("([Y|N]P_[0-9]+(\.[0-9]+)?)", header)[0][0].strip()
       except IndexError:
-        protein_accession=None
-      
+        protein_accession = None
+
+      if not protein_accession is None:
+        sub_accession = 'CDS_of_' + protein_accession
+      else:
+        sub_accession = location
+
       return {
         "Accession": accession,
         "Version": accession_version,
         "Sub_accession": sub_accession,
-        "Protein_accession": protein_accession
+        "Protein_accession": protein_accession,
+        "Location": location
       }
 
     print("loading meta...")
@@ -93,14 +100,18 @@ class Populater(object):
       for seq in fasta:
         header_info = _parse_fasta_header(seq[0])
         accession = header_info["Accession"].strip()
-        entries[accession] = header_info
-        
+        if not header_info["Protein_accession"] is None:
+            unique_accession = header_info["Protein_accession"].strip()
+        else:
+            unique_accession = accession
+        entries[unique_accession] = header_info
+
         sequence = seq[1].replace("\n", "").replace("\r", "")
-        entries[accession]["Sequence"] = sequence
-        entries[accession]["Length"] = len(sequence)
+        entries[unique_accession]["Sequence"] = sequence
+        entries[unique_accession]["Length"] = len(sequence)
         meta_line = self._line_to_dct(meta_df[meta_df.Accession == accession].set_index("Accession"))
-        entries[accession].update(meta_line)
-        entries[accession]["Index"] = index
+        entries[unique_accession].update(meta_line)
+        entries[unique_accession]["Index"] = index
         index += 1
 
     print("saving sequences...")
@@ -109,27 +120,34 @@ class Populater(object):
 
     print("building indexes...")
     for name, typ in COL.VirusSequences._field_types.items():
-      if name == "Accession" or name == "Sub_accession":
+      if name == "Sub_accession":
         self.db["VirusSequences"].ensureHashIndex([name], unique=True)
       elif typ == "enumeration":
         self.db["VirusSequences"].ensureHashIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
       elif typ == "float":
         self.db["VirusSequences"].ensureSkiplistIndex([name], unique=False, sparse=True, deduplicate=False, name=None)
 
-  def populate_peptides(self, predictions, save_freq=10000):
+  def populate_peptides(self, predictions, save_freq=100000):
+    import numpy as np
+
     print("saving entries...")
-    preds = pd.read_csv(predictions, sep="\t")
+    preds = pd.read_csv(predictions, sep="\t", low_memory=False).rename({
+        'Peptide_start_one_based': 'Position',
+        'Peptide_length': 'Length',
+        'Peptide_sequence': 'Sequence'}, axis=1).replace({np.nan:None})
+    db_keys = [x for x in self.db["Peptides"]._fields.keys() if x != 'Index']
+    preds = preds[db_keys]
     entries = []
-    for index, row in preds.iterrows():
+    for index, row in tqdm(preds.iterrows(), total=preds.shape[0]):
       dct = row.to_dict()
       new_entry = self.db["Peptides"].createDocument()
       new_entry.set(dct)
       new_entry["Index"] = index
-      new_entry["Accession"] = list(set(re.findall("NC_[0-9]+", dct["Sub_accession"])))[0].strip()
+      #new_entry["Accession"] = list(set(re.findall("NC_[0-9]+", dct["Sub_accession"])))[0].strip()
       entries.append(new_entry)
-      
+
       if index > 0 and index % save_freq == 0:
-        print("\tsaving: %d..." % save_freq)
+        print("\r\tsaving: %d..." % save_freq)
         self.db["Peptides"].bulkSave(entries)
         entries = []
 

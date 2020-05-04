@@ -15,7 +15,8 @@ requires = [
     'pyramid_debugtoolbar',
     'waitress',
     'pandas',
-    'click'
+    'click',
+    'tqdm'
 ]
 
 tests_require = [

@@ -3,14 +3,14 @@ import pyArango.validation as VAL
 
 class VirusSequences(COL.Collection):
 
-  _properties = {
-      "keyOptions" : {
-          "allowUserKeys": False,
-          "type": "autoincrement",
-          "increment": 1,
-          "offset": 0,
-      }
-  }
+  #_properties = {
+  #    "keyOptions" : {
+  #        "allowUserKeys": False,
+  #        "type": "autoincrement",
+  #        "increment": 1,
+  #        "offset": 0,
+  #    }
+  #}
 
   _validation = {
       'on_save': True,
@@ -69,14 +69,14 @@ class VirusSequences(COL.Collection):
 
 class Peptides(COL.Collection):
 
-  _properties = {
-      "keyOptions" : {
-          "allowUserKeys": False,
-          "type": "autoincrement",
-          "increment": 1,
-          "offset": 0,
-      }
-  }
+  #_properties = {
+  #    "keyOptions" : {
+  #        "allowUserKeys": False,
+  #        "type": "autoincrement",
+  #        "increment": 1,
+  #        "offset": 0,
+  #    }
+  #}
 
   _validation = {
       'on_save': True,
@@ -91,10 +91,12 @@ class Peptides(COL.Collection):
       "Model_run": COL.Field(validators=[VAL.NotNull()]),
       "Accession": COL.Field(validators=[VAL.NotNull()]),
       "Sub_accession": COL.Field(validators=[VAL.NotNull()]),
-      "Position": COL.Field(validators=[VAL.NotNull()]),
+      #"Position": COL.Field(validators=[VAL.NotNull()]),
+      "Position": COL.Field(),  # temporarily
       "Length": COL.Field(validators=[VAL.NotNull()]),
       "Sequence": COL.Field(validators=[VAL.NotNull()]),
-      "Score": COL.Field(validators=[VAL.NotNull()])
+      "Score": COL.Field(validators=[VAL.NotNull()]),
+      "Name": COL.Field(validators=[VAL.NotNull()])
   }
 
   _field_types = {
@@ -108,6 +110,7 @@ class Peptides(COL.Collection):
       "Length": "enumeration",
       "Score": "float",
       "Sequence": "enumeration",
+      "Name": "enumeration"
   }
 
 __COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides] }
