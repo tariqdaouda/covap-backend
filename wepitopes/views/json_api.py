@@ -12,7 +12,7 @@ def vital(request):
     Returns a random peptide to check that everything is up
     """
     db = get_database()
-    payload = db["Peptides"].fetchFirstExample({"length": 9}, rawResults=True).result
+    payload = db["Peptides"].fetchFirstExample({"Length": 9}, rawResults=True).result
     ret = us.JSONResponse()
     ret.set_payload(payload)
     return ret

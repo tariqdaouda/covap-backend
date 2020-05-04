@@ -24,7 +24,7 @@ tests_require = [
     'pytest >= 3.7.4',
     'pytest-cov',
     'pandas',
-    'click'
+    'click',
 ]
 
 setup(
