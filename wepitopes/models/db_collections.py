@@ -45,7 +45,7 @@ class VirusSequences(COL.Collection):
   }
 
   _field_types = {
-      'Index': 'floar',
+      'Index': 'float',
       'Accession': "enumeration",
       # 'Sequence': "enumeration",
       'Version': "enumeration",
