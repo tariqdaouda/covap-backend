@@ -113,4 +113,17 @@ class Peptides(COL.Collection):
       "Name": "enumeration"
   }
 
-__COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides] }
+
+class Contacts(COL.Collection):
+    _validation = {
+        'on_save': True,
+        'on_set': True,
+        'allow_foreign_fields': False
+    }
+
+    _fields = {
+        "email": COL.Field(validators=[VAL.NotNull(), VAL.Email()]),
+        "nbDownloads": COL.Field(validators=[VAL.NotNull()], default=1)
+    }
+
+__COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides, Contacts] }
