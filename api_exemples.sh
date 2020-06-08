@@ -15,13 +15,13 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Score": {
-                    "range": [0.7, 1]
+                    "values": [0.7, 1]
                 },
                 "Peptides.Length": {
-                    "cases": [9]
+                    "values": [9]
                 },
                 "VirusSequences.Family": {
-                    "cases": ["Coronaviridae"]
+                    "values": ["Coronaviridae"]
                 }
             },
             "join": ["VirusSequences.Accession", "Peptides.Accession"],
@@ -39,7 +39,7 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Score": {
-                    "range": [0.7, 1]
+                    "values": [0.7, 1]
                 }
             },
             "limit": 3,
@@ -56,7 +56,7 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Score": {
-                    "range": [0.7, ":"]
+                    "values": [0.7, ":"]
                 }
             },
             "limit": 3,
@@ -73,7 +73,7 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
             "query":{
                 "Peptides.Index": {
-                    "range": [10, ":"]
+                    "values": [10, ":"]
                 }
             },
             "limit": 3,
@@ -90,7 +90,7 @@ curl -i http://127.0.0.1:6543/get-data -X POST -H "Content-Type: application/jso
         "payload": {
                 "query":{
                     "Peptides.Score": {
-                        "range": [0, ":"]
+                        "values": [0, ":"]
                     }
                 },
                 "limit": 2000,

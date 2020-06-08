@@ -1,9 +1,12 @@
 import wepitopes.models.db_collections as COL
 
 from pyramid.view import view_config
-from ..database import get_database
+from ..database import get_database, get_contacts_database
 from . import useful as us
 from .. import configuration as conf
+from pyArango.theExceptions import ValidationError
+from pyramid.response import Response
+from pyArango.validation import Email
 
 @view_config(route_name='vital', renderer='jsonp', request_method="OPTIONS")
 @view_config(route_name='vital', renderer='jsonp', request_method="GET")
@@ -122,3 +125,48 @@ def get_data(request):
     ret.set_payload(result.result)
     return ret
 
+@view_config(route_name='api_update_contacts', renderer='jsonp', request_method="OPTIONS")
+@view_config(route_name='api_update_contacts', renderer='jsonp', request_method="POST")
+def update_contact(request):
+    """
+    Saves an email contact to the database (meaning someone downloaded some data)
+    """
+    try:
+        json_data = request.json
+    except Exception as e:
+        return Response(
+            json_body=us.JSONResponse(errors=["Invalid json body"]),
+            status=400
+        )
+
+    json_response = us.JSONResponse()
+    try:
+        email = json_data["payload"]["email"]
+        Email().validate(email)
+        db = get_contacts_database()
+        contacts = db["Contacts"]
+        contact_request = contacts.fetchFirstExample({"email": email})
+        # if email exists
+        if len(contact_request) >= 1:
+            contact = contact_request[0]
+            contact["nbDownloads"] = int(contact["nbDownloads"]) + 1
+            contact.patch()
+        else:
+            contact = contacts.createDocument()
+            contact.set({
+                "email": email,
+                "nbDownloads": 1
+            })
+            contact.save()
+    except ValidationError as ve:
+        return Response(
+            json_body=us.JSONResponse(errors=["Not a valid email: " + email]),
+            status=422
+        )
+    except Exception as e:
+        return Response(
+            json_body=us.JSONResponse(errors=["unable to process the request"]),
+            status=500
+        )
+
+    return Response(json_body=json_response, status=200)
