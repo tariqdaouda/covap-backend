@@ -134,11 +134,8 @@ def update_contact(request):
     try:
         json_data = request.json
     except Exception as e:
-        return Response(
-            json_body=us.JSONResponse(errors=["Invalid json body"]),
-            status=400
-        )
-
+        return us.JSONResponse(errors=["Invalid json body"])
+        
     json_response = us.JSONResponse()
     try:
         email = json_data["payload"]["email"]
@@ -159,14 +156,9 @@ def update_contact(request):
             })
             contact.save()
     except ValidationError as ve:
-        return Response(
-            json_body=us.JSONResponse(errors=["Not a valid email: " + email]),
-            status=422
-        )
+        return us.JSONResponse(errors=["invalid email: " + email])
+        
     except Exception as e:
-        return Response(
-            json_body=us.JSONResponse(errors=["unable to process the request"]),
-            status=500
-        )
-
-    return Response(json_body=json_response, status=200)
+        return us.JSONResponse(errors=["unable to process the request"])
+        
+    return us.JSONResponse()
