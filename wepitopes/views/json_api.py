@@ -113,6 +113,7 @@ def get_data(request):
     try:
         check, aql_or_message = us.build_query(COL.__COLLECTIONS.values(), json_data["payload"], print_aql=False)
     except Exception as e:
+        print(e)
         return us.JSONResponse(errors = ["Unable to prossess requests. Please verify format"] )
         
     if not check:

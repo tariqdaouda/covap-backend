@@ -126,4 +126,4 @@ class Contacts(COL.Collection):
         "nbDownloads": COL.Field(validators=[VAL.NotNull()], default=1)
     }
 
-__COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides, Contacts] }
+__COLLECTIONS = { col.__name__: col for col in [VirusSequences, Peptides] }
